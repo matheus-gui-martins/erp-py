@@ -1,0 +1,52 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Dashboard Admin</h1>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Documento</th>
+                    <th>Data de Envio</th>
+                    <th>Status</th>
+                    <th>Concessionária</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for document in documents %}
+                <tr>
+                    <td>{{ document.author.name }}</td>
+                    <td>{{ document.original_filename }}</td>
+                    <td>{{ document.upload_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>
+                        {% if document.status == 'Em espera' %}
+                            <span class="badge bg-warning">{{ document.status }}</span>
+                        {% elif document.status == 'Aceito' %}
+                            <span class="badge bg-success">{{ document.status }}</span>
+                        {% elif document.status == 'Rejeitado' %}
+                            <span class="badge bg-danger">{{ document.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if document.concessionaria %}
+                            {{ document.concessionaria.name }}
+                        {% else %}
+                            Não atribuído
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('admin.document_details', document_id=document.id) }}" class="btn btn-sm btn-info">Detalhes</a>
+                        <a href="{{ url_for('admin.download_file', filename=document.filename) }}" class="btn btn-sm btn-secondary">Download</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center">Nenhum documento no sistema.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock content %}

@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>Meus Documentos</h1>
+    
+    <div class="row mb-3">
+        <div class="col">
+            <a href="{{ url_for('user.upload_document') }}" class="btn btn-primary">Enviar Novo Documento</a>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Documento</th>
+                    <th>Data de Envio</th>
+                    <th>Status</th>
+                    <th>Comentários</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for document in documents %}
+                <tr>
+                    <td>{{ document.original_filename }}</td>
+                    <td>{{ document.upload_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td>
+                        {% if document.status == 'Em espera' %}
+                            <span class="badge bg-warning">{{ document.status }}</span>
+                        {% elif document.status == 'Aceito' %}
+                            <span class="badge bg-success">{{ document.status }}</span>
+                        {% elif document.status == 'Rejeitado' %}
+                            <span class="badge bg-danger">{{ document.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ document.comments }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center">Nenhum documento enviado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock content %}
