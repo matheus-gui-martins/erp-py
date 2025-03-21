@@ -1,0 +1,19 @@
+{% extends "layout.html" %}
+
+{% block title %}Produtos{% endblock title %}
+
+{% block content %}
+<h1>Adicionar Produto</h1>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="product_name" class="form-label">Nome do Produto</label>
+        <input type="text" class="form-control" id="product_name" name="product_name" required>
+    </div>
+    <div class="mb-3">
+        <label for="price" class="form-label">Preço</label>
+        <input type="number" class="form-control" id="price" name="price" required>
+    </div>
+    <button type="submit" class="btn btn-primary">Adicionar</button>
+</form>
+{% endblock content %}

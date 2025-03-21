@@ -7,6 +7,7 @@ from app.forms import RegistrationForm, ConcessionariaForm, ProdutoForm, Documen
 from werkzeug.security import generate_password_hash
 
 admin = Blueprint('admin', __name__)
+auth_bp = Blueprint('auth', __name__)
 
 @admin.route('/admin')
 @admin.route('/admin/dashboard')
@@ -138,3 +139,11 @@ def download_file(filename):
         flash('Acesso restrito para administradores', 'danger')
         return redirect(url_for('user.dashboard'))
     return send_from_directory(current_app.config['UPLOAD_FOLDER'], filename, as_attachment=True)
+
+@auth_bp.route('/concessionarias', methods=['GET', 'POST'])
+def concessionarias():
+    return render_template('auth/concessionarias.html')
+
+@auth_bp.route('/produtos', methods=['GET', 'POST'])
+def produtos():
+    return render_template('auth/produtos.html')

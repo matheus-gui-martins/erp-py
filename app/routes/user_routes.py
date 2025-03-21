@@ -48,3 +48,7 @@ def upload_document():
         flash('Documento enviado com sucesso!', 'success')
         return redirect(url_for('user.dashboard'))
     return render_template('user/upload.html', title='Enviar Documento', form=form)
+
+@user.route('/usuarios', methods=['GET', 'POST'])
+def usuarios():
+    return render_template('auth/usuarios.html')
