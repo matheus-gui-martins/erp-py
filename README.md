@@ -1,0 +1,1 @@
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/matheus-gui-martins/erp-py?utm_source=oss&utm_medium=github&utm_campaign=matheus-gui-martins%2Ferp-py&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
