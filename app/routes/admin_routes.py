@@ -100,28 +100,77 @@ def document_details(document_id):
         flash('Acesso restrito para administradores', 'danger')
         return redirect(url_for('user.dashboard'))
     
+    # Buscar o documento no banco de dados
     document = Document.query.get_or_404(document_id)
+    old_status = document.status  # Salvar o status antigo para comparação
     form = DocumentStatusForm()
     
-    # Populate dropdown choices
+    # Preencher as opções dos dropdowns
     form.concessionaria.choices = [(0, 'Selecione...')] + [(c.id, c.name) for c in Concessionaria.query.all()]
     form.produto.choices = [(0, 'Selecione...')] + [(p.id, p.name) for p in Produto.query.all()]
     
     if form.validate_on_submit():
+        # Atualizar os dados do documento
         document.status = form.status.data
         document.comments = form.comments.data
         
-        # Only update if selected
+        # Atualizar concessionária e produto, se selecionados
         if form.concessionaria.data != 0:
             document.concessionaria_id = form.concessionaria.data
         if form.produto.data != 0:
             document.produto_id = form.produto.data
         
         db.session.commit()
+        
+        # Enviar notificações por e-mail se o status foi alterado
+        if old_status != document.status:
+            user = User.query.get(document.user_id)
+            
+            # Notificar o usuário
+            subject = f"Atualização de status do documento: {document.original_filename}"
+            message = f"""
+            <html>
+                <body>
+                    <h2>Atualização de Status do Documento</h2>
+                    <p>Olá {user.name},</p>
+                    <p>O status do seu documento <strong>{document.original_filename}</strong> foi atualizado para <strong>{document.status}</strong>.</p>
+                    
+                    {'<p><strong>Comentários:</strong> ' + document.comments + '</p>' if document.comments else ''}
+                    
+                    <p>Acesse sua conta para mais detalhes.</p>
+                    <p>Atenciosamente,<br>Equipe de Administração</p>
+                </body>
+            </html>
+            """
+            send_email_notification(user.email, subject, message)
+            
+            # Notificar a concessionária, se aplicável
+            if document.concessionaria_id and document.status == 'Aceito':
+                concessionaria = Concessionaria.query.get(document.concessionaria_id)
+                
+                subject_conc = f"Novo documento atribuído: {document.original_filename}"
+                message_conc = f"""
+                <html>
+                    <body>
+                        <h2>Novo Documento Atribuído</h2>
+                        <p>Olá,</p>
+                        <p>Um novo documento foi atribuído à sua concessionária.</p>
+                        <p><strong>Documento:</strong> {document.original_filename}</p>
+                        <p><strong>Enviado por:</strong> {user.name}</p>
+                        
+                        {'<p><strong>Comentários:</strong> ' + document.comments + '</p>' if document.comments else ''}
+                        
+                        <p>Acesse o sistema para mais detalhes.</p>
+                        <p>Atenciosamente,<br>Equipe de Administração</p>
+                    </body>
+                </html>
+                """
+                send_email_notification(concessionaria.email, subject_conc, message_conc)
+        
         flash('Documento atualizado com sucesso!', 'success')
         return redirect(url_for('admin.dashboard'))
     
-    # Populate form with existing data
+    # Preencher o formulário com os dados existentes do documento
     form.status.data = document.status
     form.comments.data = document.comments
     if document.concessionaria_id:
