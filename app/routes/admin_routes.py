@@ -147,3 +147,125 @@ def concessionarias():
 @auth_bp.route('/produtos', methods=['GET', 'POST'])
 def produtos():
     return render_template('auth/produtos.html')
+
+# Adicionar ao arquivo app/routes/admin_routes.py
+
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from flask import current_app
+
+def send_email_notification(recipient_email, subject, message):
+    """
+    Enviar uma notificação por e-mail para o usuário ou concessionária
+    """
+    sender_email = current_app.config['MAIL_USERNAME']
+    password = current_app.config['MAIL_PASSWORD']
+    
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = recipient_email
+    msg['Subject'] = subject
+    
+    msg.attach(MIMEText(message, 'html'))
+    
+    try:
+        server = smtplib.SMTP(current_app.config['MAIL_SERVER'], current_app.config['MAIL_PORT'])
+        server.starttls()
+        server.login(sender_email, password)
+        server.send_message(msg)
+        server.quit()
+        return True
+    except Exception as e:
+        print(f"Erro ao enviar e-mail: {str(e)}")
+        return False
+
+# Atualizar a rota document_details para incluir notificação por e-mail
+@admin.route('/admin/document/<int:document_id>', methods=['GET', 'POST'])
+@login_required
+def document_details(document_id):
+    if not current_user.is_admin:
+        flash('Acesso restrito para administradores', 'danger')
+        return redirect(url_for('user.dashboard'))
+    
+    document = Document.query.get_or_404(document_id)
+    old_status = document.status
+    form = DocumentStatusForm()
+    
+    # Populate dropdown choices
+    form.concessionaria.choices = [(0, 'Selecione...')] + [(c.id, c.name) for c in Concessionaria.query.all()]
+    form.produto.choices = [(0, 'Selecione...')] + [(p.id, p.name) for p in Produto.query.all()]
+    
+    if form.validate_on_submit():
+        document.status = form.status.data
+        document.comments = form.comments.data
+        
+        # Only update if selected
+        if form.concessionaria.data != 0:
+            document.concessionaria_id = form.concessionaria.data
+        if form.produto.data != 0:
+            document.produto_id = form.produto.data
+        
+        db.session.commit()
+        
+        # Enviar e-mail se o status for alterado
+        if old_status != document.status:
+            user = User.query.get(document.user_id)
+            
+            subject = f"Atualização de status do documento: {document.original_filename}"
+            
+            message = f"""
+            <html>
+                <body>
+                    <h2>Atualização de Status do Documento</h2>
+                    <p>Olá {user.name},</p>
+                    <p>O status do seu documento <strong>{document.original_filename}</strong> foi atualizado para <strong>{document.status}</strong>.</p>
+                    
+                    {'<p><strong>Comentários:</strong> ' + document.comments + '</p>' if document.comments else ''}
+                    
+                    <p>Acesse sua conta para mais detalhes.</p>
+                    <p>Atenciosamente,<br>Equipe de Administração</p>
+                </body>
+            </html>
+            """
+            
+            send_email_notification(user.email, subject, message)
+            
+            # Se estiver associado a uma concessionária, notificar também
+            if document.concessionaria_id and document.status == 'Aceito':
+                concessionaria = Concessionaria.query.get(document.concessionaria_id)
+                
+                subject_conc = f"Novo documento atribuído: {document.original_filename}"
+                
+                message_conc = f"""
+                <html>
+                    <body>
+                        <h2>Novo Documento Atribuído</h2>
+                        <p>Olá,</p>
+                        <p>Um novo documento foi atribuído à sua concessionária.</p>
+                        <p><strong>Documento:</strong> {document.original_filename}</p>
+                        <p><strong>Enviado por:</strong> {user.name}</p>
+                        
+                        {'<p><strong>Comentários:</strong> ' + document.comments + '</p>' if document.comments else ''}
+                        
+                        <p>Acesse o sistema para mais detalhes.</p>
+                        <p>Atenciosamente,<br>Equipe de Administração</p>
+                    </body>
+                </html>
+                """
+                
+                send_email_notification(concessionaria.email, subject_conc, message_conc)
+        
+        flash('Documento atualizado com sucesso!', 'success')
+        return redirect(url_for('admin.dashboard'))
+    
+    # Populate form with existing data
+    form.status.data = document.status
+    form.comments.data = document.comments
+    if document.concessionaria_id:
+        form.concessionaria.data = document.concessionaria_id
+    if document.produto_id:
+        form.produto.data = document.produto_id
+    
+    return render_template('admin/document_details.html', title='Detalhes do Documento', 
+                          document=document, form=form)

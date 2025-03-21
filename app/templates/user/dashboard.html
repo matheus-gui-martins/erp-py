@@ -3,49 +3,107 @@
 {% block title %}Dashboard{% endblock title %}
 
 {% block content %}
-    <h1>Bem-vindo, {{ current_user.username }}</h1>
-    <p>Este é o painel do usuário.</p>
+    <h1>Bem-vindo, {{ current_user.name }}</h1>
+    <p>Este é o painel do usuário onde você pode gerenciar seus documentos enviados.</p>
 
-    <h1>Meus Documentos</h1>
-    
+    <!-- Botão para enviar novo documento -->
     <div class="row mb-3">
         <div class="col">
-            <a href="{{ url_for('user.upload_document') }}" class="btn btn-primary">Enviar Novo Documento</a>
+            <a href="{{ url_for('user.upload_document') }}" class="btn btn-primary">
+                <i class="fas fa-upload"></i> Enviar Novo Documento
+            </a>
         </div>
     </div>
-    
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Documento</th>
-                    <th>Data de Envio</th>
-                    <th>Status</th>
-                    <th>Comentários</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for document in documents %}
-                <tr>
-                    <td>{{ document.original_filename }}</td>
-                    <td>{{ document.upload_date.strftime('%d/%m/%Y %H:%M') }}</td>
-                    <td>
-                        {% if document.status == 'Em espera' %}
-                            <span class="badge bg-warning">{{ document.status }}</span>
-                        {% elif document.status == 'Aceito' %}
-                            <span class="badge bg-success">{{ document.status }}</span>
-                        {% elif document.status == 'Rejeitado' %}
-                            <span class="badge bg-danger">{{ document.status }}</span>
-                        {% endif %}
-                    </td>
-                    <td>{{ document.comments }}</td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="4" class="text-center">Nenhum documento enviado.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+
+    <!-- Tabela de documentos -->
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h3>Meus Documentos</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Documento</th>
+                            <th>Data de Envio</th>
+                            <th>Status</th>
+                            <th>Detalhes</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for document in documents %}
+                        <tr>
+                            <td>{{ document.original_filename }}</td>
+                            <td>{{ document.upload_date.strftime('%d/%m/%Y %H:%M') }}</td>
+                            <td>
+                                {% if document.status == 'Em espera' %}
+                                    <span class="badge bg-warning">{{ document.status }}</span>
+                                {% elif document.status == 'Aceito' %}
+                                    <span class="badge bg-success">{{ document.status }}</span>
+                                {% elif document.status == 'Rejeitado' %}
+                                    <span class="badge bg-danger">{{ document.status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <!-- Botão para abrir modal de detalhes -->
+                                <button type="button" class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#documentModal{{ document.id }}">
+                                    <i class="fas fa-info-circle"></i> Detalhes
+                                </button>
+
+                                <!-- Modal com detalhes do documento -->
+                                <div class="modal fade" id="documentModal{{ document.id }}" tabindex="-1" aria-labelledby="documentModalLabel{{ document.id }}" aria-hidden="true">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="documentModalLabel{{ document.id }}">Detalhes do Documento</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p><strong>Nome do arquivo:</strong> {{ document.original_filename }}</p>
+                                                <p><strong>Data de envio:</strong> {{ document.upload_date.strftime('%d/%m/%Y %H:%M') }}</p>
+                                                <p>
+                                                    <strong>Status:</strong> 
+                                                    {% if document.status == 'Em espera' %}
+                                                        <span class="badge bg-warning">{{ document.status }}</span>
+                                                    {% elif document.status == 'Aceito' %}
+                                                        <span class="badge bg-success">{{ document.status }}</span>
+                                                    {% elif document.status == 'Rejeitado' %}
+                                                        <span class="badge bg-danger">{{ document.status }}</span>
+                                                    {% endif %}
+                                                </p>
+                                                
+                                                {% if document.comments %}
+                                                <div class="alert {% if document.status == 'Rejeitado' %}alert-danger{% else %}alert-info{% endif %}">
+                                                    <h6>Feedback do Administrador:</h6>
+                                                    <p>{{ document.comments }}</p>
+                                                </div>
+                                                {% endif %}
+                                                
+                                                {% if document.concessionaria %}
+                                                    <p><strong>Encaminhado para:</strong> {{ document.concessionaria.name }}</p>
+                                                {% endif %}
+                                                
+                                                {% if document.produto %}
+                                                    <p><strong>Produto associado:</strong> {{ document.produto.name }}</p>
+                                                {% endif %}
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center">Nenhum documento enviado. Clique em "Enviar Novo Documento" para começar.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 {% endblock content %}
