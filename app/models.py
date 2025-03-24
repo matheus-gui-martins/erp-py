@@ -21,10 +21,10 @@ class Concessionaria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cnpj = db.Column(db.String(18), unique=True, nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=True)
-    address = db.Column(db.String(200), nullable=True)
-    city = db.Column(db.String(100), nullable=True)
-    state = db.Column(db.String(2), nullable=True)
+    email = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(255))
+    city = db.Column(db.String(100))
+    state = db.Column(db.String(2))
     documents = db.relationship('Document', backref='concessionaria', lazy=True)
 
     def __repr__(self):
@@ -32,11 +32,18 @@ class Concessionaria(db.Model):
 
 class Produto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    description = db.Column(db.Text)
-    
+    brand = db.Column(db.String(50), nullable=False)  # Marca
+    model = db.Column(db.String(100), nullable=False)  # Modelo
+    year = db.Column(db.String(4), nullable=False)  # Ano
+    plate = db.Column(db.String(10), unique=True, nullable=False)  # Placa
+    chassis = db.Column(db.String(50), unique=True, nullable=False)  # Chassi
+    color = db.Column(db.String(20), nullable=False)  # Cor
+    concessionaria_id = db.Column(db.Integer, db.ForeignKey('concessionaria.id'), nullable=False)  # Relacionamento com Concessionária
+
+    concessionaria = db.relationship('Concessionaria', backref='produtos')
+
     def __repr__(self):
-        return f"Produto('{self.name}')"
+        return f'<Produto {self.model}>'
 
 class Document(db.Model):
     id = db.Column(db.Integer, primary_key=True)

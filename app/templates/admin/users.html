@@ -12,6 +12,12 @@
   <body>
     <div class="container mt-5">
       <h1 class="mb-4">Usuários Cadastrados</h1>
+      <!-- Botão para cadastrar novo usuário -->
+      <div class="mb-3">
+        <a href="{{ url_for('admin.register_user') }}" class="btn btn-primary"
+          >Cadastrar Novo Usuário</a
+        >
+      </div>
       <table class="table table-striped">
         <thead>
           <tr>

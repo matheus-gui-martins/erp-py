@@ -1,0 +1,23 @@
+{% extends "layout.html" %} {% block content %}
+<h1>Detalhes do Documento</h1>
+<div class="card mt-4">
+  <div class="card-body">
+    <h5 class="card-title">Informações do Documento</h5>
+    <p><strong>Nome do Arquivo:</strong> {{ document.original_filename }}</p>
+    <p>
+      <strong>Data de Envio:</strong> {{ document.upload_date.strftime('%d/%m/%Y
+      %H:%M') }}
+    </p>
+    <p><strong>Status:</strong> {{ document.status }}</p>
+    <p><strong>Usuário:</strong> {{ document.author.name }}</p>
+    <p>
+      <strong>Concessionária:</strong>
+      {% if document.concessionaria %} {{ document.concessionaria.name }} {%
+      else %} Não atribuído {% endif %}
+    </p>
+  </div>
+</div>
+<a href="{{ url_for('admin.dashboard') }}" class="btn btn-secondary mt-3"
+  >Voltar</a
+>
+{% endblock content %}

@@ -81,7 +81,7 @@ def users_list():
 
 @admin.route('/admin/concessionarias', methods=['GET', 'POST'])
 @login_required
-def create_concessionaria():
+def concessionaria():
     if not current_user.is_admin:
         flash('Acesso restrito para administradores', 'danger')
         return redirect(url_for('admin.dashboard'))
@@ -93,6 +93,12 @@ def create_concessionaria():
         address = request.form.get('address')
         city = request.form.get('city')
         state = request.form.get('state')
+
+        # Verifica se o CNPJ já existe no banco de dados
+        existing_concessionaria = Concessionaria.query.filter_by(cnpj=cnpj).first()
+        if existing_concessionaria:
+            flash('Concessionária com este CNPJ já está cadastrada.', 'danger')
+            return redirect(url_for('admin.concessionaria'))
 
         # Cria a nova concessionária
         concessionaria = Concessionaria(
@@ -106,31 +112,45 @@ def create_concessionaria():
         db.session.add(concessionaria)
         db.session.commit()
         flash('Concessionária cadastrada com sucesso!', 'success')
-        return redirect(url_for('admin.list_concessionarias'))
+        return redirect(url_for('admin.concessionaria'))
 
-    return render_template('admin/concessionarias.html')
+    concessionarias_list = Concessionaria.query.all()  # Obter todas as concessionárias
+    return render_template('admin/concessionarias.html', concessionarias=concessionarias_list)
 
 @admin.route('/admin/produtos', methods=['GET', 'POST'])
 @login_required
 def produtos():
     if not current_user.is_admin:
         flash('Acesso restrito para administradores', 'danger')
-        return redirect(url_for('user.dashboard'))
-    
-    form = ProdutoForm()
-    if form.validate_on_submit():
+        return redirect(url_for('admin.dashboard'))
+
+    if request.method == 'POST':
+        brand = request.form.get('brand')
+        model = request.form.get('model')
+        year = request.form.get('year')
+        plate = request.form.get('plate')
+        chassis = request.form.get('chassis')
+        color = request.form.get('color')
+        concessionaria_id = request.form.get('concessionaria_id')
+
+        # Cria o novo veículo
         produto = Produto(
-            name=form.name.data,
-            description=form.description.data
+            brand=brand,
+            model=model,
+            year=year,
+            plate=plate,
+            chassis=chassis,
+            color=color,
+            concessionaria_id=concessionaria_id
         )
         db.session.add(produto)
         db.session.commit()
-        flash(f'Produto {form.name.data} cadastrado!', 'success')
+        flash('Veículo cadastrado com sucesso!', 'success')
         return redirect(url_for('admin.produtos'))
-    
-    produtos_list = Produto.query.all()
-    return render_template('admin/produtos.html', title='Produtos', 
-                           produtos=produtos_list, form=form)
+
+    # Obter todas as concessionárias para o dropdown
+    concessionarias = Concessionaria.query.all()
+    return render_template('admin/produtos.html', concessionarias=concessionarias)
 
 @admin.route('/admin/document/<int:document_id>', methods=['GET', 'POST'])
 @login_required

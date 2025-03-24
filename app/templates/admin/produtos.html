@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cadastro de Veículo</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1>Cadastro de Veículo</h1>
+      <form method="POST" action="{{ url_for('admin.produtos') }}">
+        <div class="mb-3">
+          <label for="brand" class="form-label">Marca</label>
+          <input
+            type="text"
+            class="form-control"
+            id="brand"
+            name="brand"
+            placeholder="Ex: Volkswagen"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="model" class="form-label">Modelo</label>
+          <input
+            type="text"
+            class="form-control"
+            id="model"
+            name="model"
+            placeholder="Ex: Gol"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="year" class="form-label">Ano</label>
+          <input
+            type="text"
+            class="form-control"
+            id="year"
+            name="year"
+            placeholder="Ex: 2022"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="plate" class="form-label">Placa</label>
+          <input
+            type="text"
+            class="form-control"
+            id="plate"
+            name="plate"
+            placeholder="Ex: ABC-1234"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="chassis" class="form-label">Chassi</label>
+          <input
+            type="text"
+            class="form-control"
+            id="chassis"
+            name="chassis"
+            placeholder="Ex: 9BWZZZ377VT004251"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="color" class="form-label">Cor</label>
+          <input
+            type="text"
+            class="form-control"
+            id="color"
+            name="color"
+            placeholder="Ex: Preto"
+            required
+          />
+        </div>
+        <div class="mb-3">
+          <label for="concessionaria" class="form-label">Concessionária</label>
+          <select
+            class="form-select"
+            id="concessionaria"
+            name="concessionaria_id"
+            required
+          >
+            <option value="" disabled selected>
+              Selecione uma concessionária
+            </option>
+            {% for concessionaria in concessionarias %}
+            <option value="{{ concessionaria.id }}">
+              {{ concessionaria.name }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-success">Cadastrar</button>
+      </form>
+    </div>
+  </body>
+</html>

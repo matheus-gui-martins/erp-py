@@ -1,10 +1,12 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from flask_migrate import Migrate
 from config import Config
 import os
 
 db = SQLAlchemy()
+Migrate = Migrate()
 login_manager = LoginManager()
 login_manager.login_view = 'auth.login'
 
@@ -12,9 +14,11 @@ def create_app(config_class=Config):
     app = Flask(__name__, 
                 template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates'))
     app.config.from_object(config_class)
-    
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
     db.init_app(app)
     login_manager.init_app(app)
+    Migrate.init_app(app, db)
     
     from app.routes.auth_routes import auth
     from app.routes.user_routes import user
