@@ -10,21 +10,25 @@ class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
-    password = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(128), nullable=False)
     is_admin = db.Column(db.Boolean, default=False)
     documents = db.relationship('Document', backref='author', lazy=True)
     
     def __repr__(self):
-        return f"User('{self.name}', '{self.email}')"
+        return f'<User {self.name}>'
 
 class Concessionaria(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    cnpj = db.Column(db.String(18), unique=True, nullable=False)
     name = db.Column(db.String(100), nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=True)
+    address = db.Column(db.String(200), nullable=True)
+    city = db.Column(db.String(100), nullable=True)
+    state = db.Column(db.String(2), nullable=True)
     documents = db.relationship('Document', backref='concessionaria', lazy=True)
-    
+
     def __repr__(self):
-        return f"Concessionaria('{self.name}')"
+        return f'<Concessionaria {self.name}>'
 
 class Produto(db.Model):
     id = db.Column(db.Integer, primary_key=True)
